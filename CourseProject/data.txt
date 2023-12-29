@@ -1,0 +1,15 @@
+Blender
+3Д дизайн
+3,800000
+Blender Foundation
+GNU GPL 3
+Word
+Офисное
+2022,000000
+Microsoft
+Appache Software Licence
+GIMP
+Графическое
+22,799999
+GNOME
+GNU GPL 3
