@@ -2,6 +2,7 @@
 #include <locale.h>
 #include <string.h>
 #include <stdlib.h>
+#define RUN 32
 
 struct software
 {
@@ -30,7 +31,9 @@ void FindInDatabase(Array database, char second_choose, char* str);
 Array DelElement(Array arr, int index);
 int SaveToFile(Array arr);
 Array LoadFromFile();
-int compare(const void* a, const void* b);
+void SortInsert(Software* ptrarr, int left, int right);
+void Merge(Software* ptrarr, int l, int m, int r);
+void TimSort(Software* ptrarr, int n);
 
 int main() {
 	setlocale(LC_ALL, "RUS");
@@ -149,7 +152,7 @@ int main() {
 			//7. Отсортировать базу данных по алфавиту в поле "Разработчик"
 		case '7':
 			system("cls");
-			qsort(database.array, database.size, sizeof(software), compare);
+			TimSort(database.array, database.size);
 			printf("база данных успешно отсортированна\n");
 			system("pause");
 			break;
@@ -320,9 +323,65 @@ Array LoadFromFile() {
 	return temp;
 }
 
-int compare(const void* a, const void* b)
+void SortInsert(Software* ptrarr, int left, int right) {
+	for (int i = left + 1; i <= right; i++) {
+		Software temp = ptrarr[i];
+		int j = i - 1;
+		while (j >= left && strcmp(ptrarr[j].Developer, temp.Developer) > 0) {
+			ptrarr[j + 1] = ptrarr[j];
+			j--;
+		}
+		ptrarr[j + 1] = temp;
+	}
+}
+
+void Merge(Software* ptrarr, int l, int m, int r)
 {
-	Software* data_1 = a;
-	Software* data_2 = b;
-	return strcmp(data_1->Developer, data_2->Developer);
+	int len1 = m - l + 1, len2 = r - m;
+	Software* left = (Software*)malloc(len1 * sizeof(Software));
+	Software* right = (Software*)malloc(len2 * sizeof(Software));
+	for (int i = 0; i < len1; i++)
+		left[i] = ptrarr[l + i];
+	for (int i = 0; i < len2; i++)
+		right[i] = ptrarr[m + 1 + i];
+
+	int i = 0;
+	int j = 0;
+	int k = l;
+
+	while (i < len1 && j < len2) {
+		if (strcmp(left[i].Developer, right[j].Developer) > 0) {
+			ptrarr[k] = left[i];
+			i++;
+		}
+		else {
+			ptrarr[k] = right[j];
+			j++;
+		}
+		k++;
+	}
+	while (i < len1) {
+		ptrarr[k] = left[i];
+		k++;
+		i++;
+	}
+	while (j < len2) {
+		ptrarr[k] = right[j];
+		k++;
+		j++;
+	}
+}
+
+void TimSort(Software* ptrarr, int n)
+{
+	for (int i = 0; i < n; i += RUN)
+		SortInsert(ptrarr, i, min((i + RUN - 1), (n - 1)));
+	for (int size = RUN; size < n; size = 2 * size) {
+		for (int left = 0; left < n; left += 2 * size) {
+			int mid = left + size - 1;
+			int right = min((left + 2 * size - 1), (n - 1));
+			if (mid < right)
+				Merge(ptrarr, left, mid, right);
+		}
+	}
 }
